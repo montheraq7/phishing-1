@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Phishing Demo API")
 
-# Allow CodePen (or any frontend) to call your API
+# Allow CodePen / any frontend to call your API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,6 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Load saved model + vectorizer (created by train.py during Render build)
 model = joblib.load("model.joblib")
 vectorizer = joblib.load("vectorizer.joblib")
 
@@ -36,9 +37,13 @@ def root():
 def predict(req: PredictRequest):
     cleaned = clean_text(req.text)
     X = vectorizer.transform([cleaned])
+
     pred = int(model.predict(X)[0])
 
-    # Adjust labels if your dataset uses opposite meaning
+    # ✅ Your requested line:
     label = "phishing" if pred == 1 else "legitimate"
 
-    return {"prediction": pred, "label": label}
+    return {
+        "prediction": pred,
+        "label": label
+    }
