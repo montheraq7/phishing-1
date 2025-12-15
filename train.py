@@ -14,13 +14,16 @@ def clean_text(text: str) -> str:
 
 df = pd.read_csv("Phishing_Legitimate_full.csv")
 
-# Combine all columns except id/label into one text input (like your notebook)
-feature_columns = [c for c in df.columns if c not in ["id", "label"]]
+# ✅ auto-pick label column
+LABEL_COL = "CLASS_LABEL" if "CLASS_LABEL" in df.columns else "label"
+
+feature_columns = [c for c in df.columns if c not in ["id", LABEL_COL]]
+
 df["text_combined"] = df[feature_columns].astype(str).agg(" ".join, axis=1)
 df["clean_text"] = df["text_combined"].apply(clean_text)
 
 X = df["clean_text"]
-y = df["label"]
+y = df[LABEL_COL]
 
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
